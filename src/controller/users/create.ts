@@ -35,7 +35,13 @@ export async function create(request: FastifyRequest, reply: FastifyReply) {
 
     //hashpasword
 
-    const userCreated = await prisma.user.create(payload)
+    const userCreated = await prisma.User.create({
+      data : {
+        username: payload.username,
+        email: payload.email,
+        password: payload.password
+      }
+    })
 
     return reply.status(201).send({
       message: "User created successfully.",
@@ -48,6 +54,9 @@ export async function create(request: FastifyRequest, reply: FastifyReply) {
         message: error.issues[0].message
       })
     }
-    //return global error
+
+    return reply.status(400).send({
+        message: error
+      })
   }
 }

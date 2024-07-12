@@ -15,7 +15,7 @@ export async function create(request: FastifyRequest, reply: FastifyReply) {
   try {
     const payload = payloadSchema.parse(request.body)
 
-    const userExist = await prisma.User.findUnique({
+    const userExist = await prisma.user.findUnique({
       where: {
         email: payload.email
       }
@@ -35,7 +35,7 @@ export async function create(request: FastifyRequest, reply: FastifyReply) {
 
     //hashpasword
 
-    const userCreated = await prisma.User.create({
+    const userCreated = await prisma.user.create({
       data : {
         username: payload.username,
         email: payload.email,

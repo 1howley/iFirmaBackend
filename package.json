@@ -11,7 +11,9 @@
   "description": "",
   "dependencies": {
     "@prisma/client": "^5.15.1",
+    "cors": "^2.8.5",
     "fastify": "^4.28.0",
+    "fastify-cors": "^6.1.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

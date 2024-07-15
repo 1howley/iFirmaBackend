@@ -1,16 +1,18 @@
-import fastify from 'fastify'
-import { RegisterUsers } from './routes/login/registerUsers'
-import { Login } from './routes/login/login'
+const express = require('express')
+const cors = require('cors')
+const bodyParser = require('body-parser')
+const { create } = require('./controller/users/create')
+const { login } = require('./controller/users/verifyLogin')
 
-const app = fastify()
+const app = express()
 
-app.register(RegisterUsers, { prefix: 'v1' })
-app.register(Login, { prefix: 'v1', origin: 'http://192.168.0.109:4200' })
+app.use(cors({ origin: '*' }))
+app.use(bodyParser.json())
 
-app.listen({
-  host: '0.0.0.0',
-  port: 3000
-}, () => {
+// Definir rotas
+app.post('/v1/register', create)
+app.post('/v1/login', login)
+
+app.listen(3000, '0.0.0.0', () => {
   console.log('HTTP Server Up')
 })
-

@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client'
-import { FastifyReply, FastifyRequest } from 'fastify'
-import { z } from 'zod'
+const { PrismaClient } = require('@prisma/client')
+const { z } = require('zod')
 
 const prisma = new PrismaClient()
 
@@ -11,9 +10,9 @@ const payloadSchema = z.object({
   email: z.string().email(),
 })
 
-export async function create(request: FastifyRequest, reply: FastifyReply) {
+async function create(req, res) {
   try {
-    const payload = payloadSchema.parse(request.body)
+    const payload = payloadSchema.parse(req.body)
 
     const userExist = await prisma.user.findUnique({
       where: {
@@ -22,41 +21,43 @@ export async function create(request: FastifyRequest, reply: FastifyReply) {
     })
 
     if(userExist) {
-      return reply.status(409).send({
-        message: "User already exist."
+      return res.status(409).send({
+        message: "User already exists."
       })
     }
 
-    if(payload.password != payload.confirmPassword) {
-      return reply.status(402).send({
+    if(payload.password !== payload.confirmPassword) {
+      return res.status(402).send({
         message: "Please make sure that the passwords are the same."
       })
     }
 
-    //hashpasword
+    // Hash password logic here
 
     const userCreated = await prisma.user.create({
-      data : {
+      data: {
         username: payload.username,
         email: payload.email,
         password: payload.password
       }
     })
 
-    return reply.status(201).send({
+    return res.status(201).send({
       message: "User created successfully.",
       user: userCreated
     })
 
-  } catch(error: unknown) {
-    if(error instanceof z.ZodError) {
-      return reply.status(400).send({
+  } catch(error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).send({
         message: error.issues[0].message
       })
     }
 
-    return reply.status(400).send({
-        message: error
-      })
+    return res.status(400).send({
+      message: error.message
+    })
   }
 }
+
+module.exports = { create }

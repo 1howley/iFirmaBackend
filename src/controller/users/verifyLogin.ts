@@ -1,59 +1,45 @@
-import { PrismaClient } from '@prisma/client';
-import { FastifyReply, FastifyRequest } from 'fastify';
-import { z } from 'zod';
+const { PrismaClient } = require('@prisma/client')
+const { z } = require('zod')
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1).max(24),
-});
+})
 
-export async function login(request: FastifyRequest, reply: FastifyReply) {
+async function login(req, res) {
   try {
-    const payload = loginSchema.parse(request.body);
+    const payload = loginSchema.parse(req.body)
 
     const user = await prisma.user.findUnique({
       where: {
-        email: payload.email,
-      },
-    });
+        email: payload.email
+      }
+    })
 
-    if (!user) {
-      return reply.status(401).send({
-        message: "Invalid email or password.",
-      });
+    if (!user || user.password !== payload.password) {
+      return res.status(401).send({
+        message: "Invalid email or password."
+      })
     }
 
-    const isPasswordValid = payload.password == user.password
-
-    if (!isPasswordValid) {
-      return reply.status(401).send({
-        message: "Invalid email or password.",
-      });
-    }
-
-    // Supondo que você gere um token JWT ou algo similar
-    // const token = generateToken(user);
-
-    return reply.status(200).send({
+    return res.status(200).send({
       message: "Login successful.",
-      // token: token,
-      user: {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-      },
-    });
-  } catch (error: unknown) {
+      user
+    })
+
+  } catch(error) {
     if (error instanceof z.ZodError) {
-      return reply.status(400).send({
-        message: error.issues[0].message,
-      });
+      return res.status(400).send({
+        message: error.issues[0].message
+      })
     }
 
-    return reply.status(500).send({
-      message: "Internal server error.",
-    });
+    return res.status(400).send({
+      message: error.message
+    })
   }
 }
+
+module.exports = { login }
